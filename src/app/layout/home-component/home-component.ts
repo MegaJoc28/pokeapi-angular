@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { Pokemon } from '../../shared/interfaces/pokemon.interface';
+import { Pokemon, PokemonDetail } from '../../shared/interfaces/pokemon.interface';
 import { PokeService } from '../../core/services/poke.service';
+import { forkJoin } from 'rxjs';
+import { createLinkedSignal } from '@angular/core/primitives/signals';
 
 @Component({
   selector: 'app-home-component',
@@ -10,17 +12,31 @@ import { PokeService } from '../../core/services/poke.service';
   styleUrl: './home-component.scss'
 })
 export class HomeComponent implements OnInit {
-  pokemons: Pokemon[] = [];
+  pokemonDetails: PokemonDetail[] = [];
 
-  constructor(private pokeService: PokeService){}
+  constructor(private pokeService: PokeService) { }
 
   ngOnInit(): void {
     this.pokeService.getPokemons().subscribe({
       next: (response) => {
-        this.pokemons = response.results;
+        const pokemonObservables = response.results.map(pokemon =>
+          this.pokeService.getPokemonDetails(pokemon.url),
+        );
+
+        forkJoin(pokemonObservables).subscribe({
+          next: (details) => {
+            details.forEach((pokemon) => {
+              console.log(`Habilidades de ${pokemon.name}:`, pokemon.abilities);
+            })
+            this.pokemonDetails = details;
+          },
+          error: (err) => {
+            console.error('Error al obtener los detalles de los Pokémon:', err);
+          }
+        });
       },
-      error: (err) => {
-        console.error('Error al obtener los Pokémon:', err);
+      error: (error) => {
+        console.error('Error al obtener los Pokémon:', error);
       }
     });
   }

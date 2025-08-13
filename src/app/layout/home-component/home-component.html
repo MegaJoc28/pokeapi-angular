@@ -1,8 +1,25 @@
 <div class="pokemon-container">
-    <h2>Lista de Pokémon</h2>
-    <ul class="pokemon-list">
-        <li *ngFor="let pokemon of pokemons">
-            {{ pokemon.name }}
-        </li>
-    </ul>
-</div>
+      <h2>Lista de Pokémon</h2>
+      <div class="card-grid">
+        <div *ngFor="let pokemon of pokemonDetails" class="pokemon-card">
+          <div class="card-header">
+            <h3>{{ pokemon.name }}</h3>
+          </div>
+          <div class="card-body">
+            <img [src]="pokemon.sprites.versions['generation-v']['black-white'].animated.front_default" [alt]="pokemon.name" class="pokemon-gif">
+            <div class="card-info">
+              <p>
+                <strong>Tipos:</strong>
+                <span *ngFor="let type of pokemon.types" class="pokemon-type {{ type.type.name }}">
+                  {{ type.type.name }}
+                </span>
+              </p>
+              <p *ngIf="pokemon.abilities && pokemon.abilities.length > 0">
+                <strong>Habilidades:</strong>
+                <span *ngFor="let ability of pokemon.abilities" class="pokemon-ability">{{ ability?.ability?.name }}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
